@@ -23,7 +23,7 @@ const authController = {
       const isMatch = password === user.password;
       const isValidPassword = await comparePassword(password, user.password);
       if (!isValidPassword) {
-        return res.status(401).json({ message: 'Invalid credentials Password' });
+        return res.status(401).json({ message: 'Invalid credentials Password admin' });
       }
 
       // Generate token

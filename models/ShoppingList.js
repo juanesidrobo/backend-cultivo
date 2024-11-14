@@ -6,7 +6,7 @@ class ShoppingList {
     console.log(userId);
     try {
       const [result] = await connection.query(
-        'INSERT INTO ListaCompras (idUser, fecha_registro) VALUES (?, NOW())',
+        'INSERT INTO ListaCompras (idUser, fecha_registro, nombre) VALUES (?, NOW(), ?)',
         [userId]
       );
       return result.insertId;
@@ -57,7 +57,7 @@ class ShoppingList {
     const connection = await pool.getConnection();
     try {
       const [result] = await connection.query(
-        'UPDATE elementoslista SET nombre = ?, id_sitio = ? WHERE id = ?',
+        'UPDATE ElementoLista SET nombre = ?, id_sitio = ? WHERE id = ?',
         [updatedItem.nombre, updatedItem.idSitio, itemId]
       );
       return result.affectedRows > 0;
@@ -65,10 +65,34 @@ class ShoppingList {
       connection.release();
     }
   }
-  
+  static async changeState(itemId, updatedItem) {
+    const connection = await pool.getConnection();
+    try {
+      const [result] = await connection.query(
+        'UPDATE ElementoLista SET estado = ? WHERE id = ?',
+        [updatedItem.estado, itemId]
+      );
+      return result.affectedRows > 0;
+    } finally {
+      connection.release();
+    }
+  }
+  static async changeStateDelete(itemId, updatedItem) {
+    const connection = await pool.getConnection();
+    try {
+      const [result] = await connection.query(
+        'UPDATE ElementoLista SET estadoEliminado = ? WHERE id = ?',
+        [updatedItem.estadoEliminado, itemId]
+      );
+      return result.affectedRows > 0;
+    } finally {
+      connection.release();
+    }
+  }
+
   static async removeItem(itemId) {
     const [result] = await pool.query(
-      'DELETE FROM elementoslista WHERE id = ?',
+      'DELETE FROM ElementoLista WHERE id = ?',
       [itemId]
     );
     return result.affectedRows > 0;

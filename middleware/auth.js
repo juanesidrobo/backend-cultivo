@@ -18,7 +18,7 @@ const authMiddleware = async (req, res, next) => {
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Acceso no autorizado' });
+      return res.status(403).json({ message: 'Acceso no autorizado auth.js' });
     }
     next();
   };

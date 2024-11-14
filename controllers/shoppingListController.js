@@ -77,6 +77,36 @@ const shoppingListController = {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   },
+  async changeState(req, res) {
+    try {
+      const { itemId } = req.params;
+      const updatedItem = req.body;
+      const success = await ShoppingList.updateItem(itemId, updatedItem);
+      if (success) {
+        res.json({ message: 'Elemento actualizado' });
+      } else {
+        res.status(404).json({ message: 'Elemento no encontrado' });
+      }
+    } catch (error) {
+      console.error('Error al actualizar elemento:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },
+  async changeStateDelete(req, res) {
+    try {
+      const { itemId } = req.params;
+      const updatedItem = req.body;
+      const success = await ShoppingList.updateItem(itemId, updatedItem);
+      if (success) {
+        res.json({ message: 'Elemento actualizado' });
+      } else {
+        res.status(404).json({ message: 'Elemento no encontrado' });
+      }
+    } catch (error) {
+      console.error('Error al actualizar elemento:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },
 
   async removeItem(req, res) {
     try {

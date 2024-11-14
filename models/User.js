@@ -20,7 +20,6 @@ class User {
     const connection = await pool.getConnection();
     try {
       const hashedPassword = await encryptPassword(userData.password);
-      console.log('Contraseña encriptada:', hashedPassword);
       
       const [result] = await connection.query(
         `INSERT INTO users (
@@ -81,12 +80,12 @@ class User {
         [
           userData.nombres,
           userData.apellidos,
-          userData.tipoDocumento,
-          userData.numeroDocumento,
+          userData.tipo_documento,
+          userData.numero_documento,
           userData.genero,
           userData.email,
           userData.telefono,
-          userData.fechaNacimiento,
+          userData.fecha_nacimiento,
           id
         ]
       );
@@ -103,6 +102,19 @@ class User {
     );
     return result.affectedRows > 0;
   }
+  static async delete(id) {
+    const connection = await pool.getConnection();
+    try {
+      const [result] = await connection.query(
+        'DELETE FROM users WHERE id = ?',
+        [id]
+      );
+      return result.affectedRows > 0;
+    } finally {
+      connection.release();
+    }
+  }
+  
 
   static async list() {
     const [rows] = await pool.query('SELECT * FROM users WHERE estado = true');

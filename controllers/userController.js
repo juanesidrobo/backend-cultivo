@@ -27,15 +27,24 @@ const userController = {
     }
   },
 
+  // En el userController.js del backend
   async getUsers(req, res) {
-    try {
-      const users = await User.list();
-      res.json(users);
-    } catch (error) {
-      console.error('Error al obtener usuarios:', error);
-      res.status(500).json({ message: 'Error interno del servidor' });
+  try {
+    const { email } = req.query;
+    let users;
+    
+    if (email) {
+      users = await User.findByEmail(email);
+    } else {
+      users = await User.list();
     }
-  },
+    
+    res.json(users);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+},
 
   async updateUser(req, res) {
     try {
@@ -67,7 +76,22 @@ const userController = {
       console.error('Error al desactivar usuario:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
     }
+  },
+  async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+      const success = await User.delete(id);
+      if (success) {
+        res.json({ message: 'Usuario eliminado exitosamente' });
+      } else {
+        res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
   }
+  
 };
 
 module.exports = userController;

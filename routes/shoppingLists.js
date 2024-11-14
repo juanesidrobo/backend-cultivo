@@ -32,6 +32,14 @@ router.put('/items/:itemId',
   authMiddleware,
   shoppingListController.updateItem
 );
+router.put('/items/:itemId',
+  authMiddleware,
+  shoppingListController.changeState
+);
+router.put('/items/:itemId',
+  authMiddleware,
+  shoppingListController.changeStateDelete
+);
 
 router.delete('/items/:itemId',
   authMiddleware,

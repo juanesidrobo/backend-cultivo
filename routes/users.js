@@ -28,4 +28,10 @@ router.delete('/:id',
   userController.deactivateUser
 );
 
+router.delete('/:id', 
+  authMiddleware, 
+  checkRole(['SUPER_ADMIN']), 
+  userController.deleteUser
+);
+
 module.exports = router;
