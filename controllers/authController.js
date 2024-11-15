@@ -6,7 +6,7 @@ const authController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      email = email.toLowerCase();
+      // email = email.toLowerCase();
       // Validate input
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -101,6 +101,46 @@ const authController = {
       });
     } catch (error) {
       console.error('Registration error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+  googleLogin: async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      // Find user
+      const user = await User.findByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Generate token
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          email: user.email, 
+          role: user.rol 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      res.json({ 
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.rol,
+          nombres: user.nombres,
+          apellidos: user.apellidos,
+          estado: user.estado
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
