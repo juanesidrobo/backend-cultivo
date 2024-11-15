@@ -6,7 +6,7 @@ const authController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+      email = email.toLowerCase();
       // Validate input
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -44,7 +44,8 @@ const authController = {
           email: user.email,
           role: user.rol,
           nombres: user.nombres,
-          apellidos: user.apellidos
+          apellidos: user.apellidos,
+          estado: user.estado
         }
       });
     } catch (error) {

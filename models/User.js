@@ -15,12 +15,16 @@ class User {
     this.telefono = data.telefono;
     this.fecha_nacimiento = data.fecha_nacimiento; // Ajustado
     this.rol = data.rol;
+    this.estado = data.estado;
   }
   static async create(userData) {
     const connection = await pool.getConnection();
     try {
       const hashedPassword = await encryptPassword(userData.password);
-      
+  
+      // Formatear la fecha de nacimiento
+      const fecha_nacimiento_formatted = new Date(userData.fecha_nacimiento).toISOString().slice(0, 10);
+  
       const [result] = await connection.query(
         `INSERT INTO users (
           nombres, apellidos, tipo_documento, numero_documento, 
@@ -36,7 +40,7 @@ class User {
           userData.email,
           userData.telefono,
           userData.rol || 'USER',
-          userData.fecha_nacimiento,
+          fecha_nacimiento_formatted, // Usar la fecha formateada
           hashedPassword
         ]
       );
@@ -45,6 +49,7 @@ class User {
       connection.release();
     }
   }
+  
 
   static async findByEmail(email) {
     const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -66,6 +71,9 @@ class User {
   static async update(id, userData) {
     const connection = await pool.getConnection();
     try {
+      // Formatear la fecha de nacimiento
+      const fecha_nacimiento_formatted = new Date(userData.fecha_nacimiento).toISOString().slice(0, 10);
+  
       const [result] = await connection.query(
         `UPDATE users SET 
           nombres = ?,
@@ -85,7 +93,7 @@ class User {
           userData.genero,
           userData.email,
           userData.telefono,
-          userData.fecha_nacimiento,
+          fecha_nacimiento_formatted, // Usar la fecha formateada
           id
         ]
       );
@@ -94,6 +102,7 @@ class User {
       connection.release();
     }
   }
+  
 
   static async deactivate(id) {
     const [result] = await pool.query(
