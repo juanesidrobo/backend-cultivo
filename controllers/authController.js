@@ -5,33 +5,32 @@ const { comparePassword } = require('../utils/encryption');
 const authController = {
   login: async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { username, password } = req.body;
       // email = email.toLowerCase();
       // Validate input
-      if (!email || !password) {
+      if (!username || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
       }
 
       // Find user
       //console.log(User);
-      const user = await User.findByEmail(email);
+      const user = await User.findByEmail(username);
       if (!user) {
         return res.status(401).json({ message: 'Invalid credentials Email' });
       }
       //console.log(user); 
       // Verify password
       const isMatch = password === user.password;
-      const isValidPassword = await comparePassword(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: 'Invalid credentials Password admin' });
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials Password' });
       }
 
       // Generate token
       const token = jwt.sign(
         { 
-          id: user.id, 
-          email: user.email, 
-          role: user.rol 
+          id_usuario: user.id_usuario, 
+          username: user.username, 
+          rol: user.rol 
         },
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
@@ -40,12 +39,12 @@ const authController = {
       res.json({ 
         token,
         user: {
-          id: user.id,
-          email: user.email,
-          role: user.rol,
-          nombres: user.nombres,
-          apellidos: user.apellidos,
-          estado: user.estado
+          id_usuario: user.id_usuario,
+          username: user.username,
+          rol: user.rol,
+          id_cliente: user.id_cliente,
+          id_agricultor: user.id_agricultor,
+          id_administrador: user.id_administrador
         }
       });
     } catch (error) {

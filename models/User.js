@@ -4,27 +4,18 @@ const { encryptPassword } = require('../utils/encryption');
 class User {
   constructor(data) {
     //console.log('Datos recibidos en el constructor:', data);
-    this.id = data.id;
-    this.nombres = data.nombres;
-    this.apellidos = data.apellidos;
-    this.email = data.email;
+    this.id_usuario = data.id_usuario;
+    this.username = data.username;
     this.password = data.password;
-    this.tipo_documento = data.tipo_documento; // Ajustado
-    this.numero_documento = data.numero_documento; // Ajustado
-    this.genero = data.genero;
-    this.telefono = data.telefono;
-    this.fecha_nacimiento = data.fecha_nacimiento; // Ajustado
     this.rol = data.rol;
-    this.estado = data.estado;
+    this.id_cliente = data.id_cliente;
+    this.id_agricultor = data.id_agricultor;
+    this.id_administrador = data.id_administrador;
   }
   static async create(userData) {
     const connection = await pool.getConnection();
     try {
-      const hashedPassword = await encryptPassword(userData.password);
-  
-      // Formatear la fecha de nacimiento
-      const fecha_nacimiento_formatted = new Date(userData.fecha_nacimiento).toISOString().slice(0, 10);
-  
+      
       const [result] = await connection.query(
         `INSERT INTO users (
           nombres, apellidos, tipo_documento, numero_documento, 
@@ -51,8 +42,8 @@ class User {
   }
   
 
-  static async findByEmail(email) {
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+  static async findByEmail(username) {
+    const [rows] = await pool.query('SELECT * FROM usuarios WHERE username = ?', [username]);
     console.log('Resultado de la consulta:', rows[0]);
     if (rows.length > 0) {
       return new User(rows[0]);
@@ -60,9 +51,9 @@ class User {
     return null;
   }
 
-  static async findById(id) {
+  static async findById(id_usuario) {
     const [rows] = await pool.query(
-      'SELECT * FROM users WHERE id = ? AND estado = true',
+      'SELECT * FROM usuarios WHERE id = ?',
       [id]
     );
     return rows[0];
@@ -83,8 +74,9 @@ class User {
           genero = ?,
           email = ?,
           telefono = ?,
+          estado = ?,
           fecha_nacimiento = ?
-        WHERE id = ? AND estado = true`,
+        WHERE id = ?`,
         [
           userData.nombres,
           userData.apellidos,
@@ -93,6 +85,7 @@ class User {
           userData.genero,
           userData.email,
           userData.telefono,
+          userData.estado,
           fecha_nacimiento_formatted, // Usar la fecha formateada
           id
         ]
@@ -126,7 +119,7 @@ class User {
   
 
   static async list() {
-    const [rows] = await pool.query('SELECT * FROM users WHERE estado = true');
+    const [rows] = await pool.query('SELECT * FROM usuarios');
     return rows;
   }
 }
