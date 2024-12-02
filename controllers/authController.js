@@ -56,40 +56,33 @@ const authController = {
   register: async (req, res) => {
     try {
       const {
-        nombres,
-        apellidos,
-        tipoDocumento,
-        numeroDocumento,
-        genero,
-        email,
-        telefono,
+        username,
         password,
-        fechaNacimiento
+        rol,
+        id_cliente,
+        id_agricultor,
+        id_administrador
       } = req.body;
 
       // Validate required fields
-      if (!email || !password || !nombres || !apellidos) {
+      if (!username || !password || !rol || (!id_cliente || !id_agricultor || !id_administrador)) {
         return res.status(400).json({ message: 'Missing required fields' });
       }
 
       // Check if user already exists
-      const existingUser = await User.findByEmail(email);
+      const existingUser = await User.findByEmail(username);
       if (existingUser) {
         return res.status(400).json({ message: 'Email already registered' });
       }
 
       // Create new user
       const userData = {
-        nombres,
-        apellidos,
-        tipoDocumento,
-        numeroDocumento,
-        genero,
-        email,
-        telefono,
-        rol: 'USER', // Default role
-        fechaNacimiento,
-        password
+        username,
+        password,
+        rol,
+        id_cliente,
+        id_agricultor,
+        id_administrador
       };
 
       const userId = await User.create(userData);

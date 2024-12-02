@@ -17,22 +17,17 @@ class User {
     try {
       
       const [result] = await connection.query(
-        `INSERT INTO users (
-          nombres, apellidos, tipo_documento, numero_documento, 
-          genero, email, telefono, rol, fecha_nacimiento, 
-          password
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO usuarios (
+          username, password, rol, id_cliente, id_agricultor, id_administrador
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
-          userData.nombres,
-          userData.apellidos,
-          userData.tipo_documento,
-          userData.numero_documento,
-          userData.genero,
-          userData.email,
-          userData.telefono,
-          userData.rol || 'USER',
-          fecha_nacimiento_formatted, // Usar la fecha formateada
-          hashedPassword
+          userData.username,
+          userData.password,
+          userData.rol,
+          userData.id_cliente  || null,
+          userData.id_agricultor || null,
+          userData.id_administrador  || null
+
         ]
       );
       return result.insertId;

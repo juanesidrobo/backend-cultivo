@@ -6,12 +6,12 @@ const userController = {
       const userData = req.body;
       
       // Validar datos requeridos
-      if (!userData.email || !userData.password || !userData.nombres || !userData.apellidos) {
+      if (!userData.username || !userData.password ||  !userData.rol) {
         return res.status(400).json({ message: 'Faltan campos requeridos' });
       }
 
       // Verificar si el email ya existe
-      const existingUser = await User.findByEmail(userData.email);
+      const existingUser = await User.findByEmail(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: 'El email ya está registrado' });
       }
@@ -30,11 +30,11 @@ const userController = {
   // En el userController.js del backend
   async getUsers(req, res) {
   try {
-    const { email } = req.query;
+    const { username } = req.query;
     let users;
     
-    if (email) {
-      users = await User.findByEmail(email);
+    if (username) {
+      users = await User.findByEmail(username);
     } else {
       users = await User.list();
     }

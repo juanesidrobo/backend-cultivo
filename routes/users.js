@@ -5,8 +5,8 @@ const { authMiddleware, checkRole } = require('../middleware/auth');
 
 // Rutas para usuarios
 router.post('/', 
-  authMiddleware, 
-  checkRole(['SUPER_ADMIN']), 
+  //authMiddleware, 
+  //checkRole(['administrador']), 
   userController.createUser
 );
 
