@@ -23,6 +23,29 @@ const productoController = {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   },
+  async getAllProducts(req, res) {
+    try {
+      const productos = await Producto.getAllProducts();
+      res.json(productos);
+    } catch (error) {
+      console.error('Error al obtener todos los productos:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },
+
+  async searchByName(req, res) {
+    try {
+      const { nombre } = req.query;
+      if (!nombre) {
+        return res.status(400).json({ message: 'El parámetro nombre es requerido' });
+      }
+      const productos = await Producto.searchByName(nombre);
+      res.json(productos);
+    } catch (error) {
+      console.error('Error al buscar productos por nombre:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },
 
   async updateProducto(req, res) {
     try {

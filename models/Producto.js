@@ -32,6 +32,18 @@ class Producto {
     );
     return rows;
   }
+  static async getAllProducts() {
+    const [rows] = await pool.query('SELECT * FROM tbl_producto');
+    return rows;
+  }
+
+  static async searchByName(name) {
+    const [rows] = await pool.query(
+      'SELECT * FROM tbl_producto WHERE nombre LIKE ?',
+      [`%${name}%`]
+    );
+    return rows;
+  }
 
   static async update(id, id_agricultor, item) {
     const connection = await pool.getConnection();

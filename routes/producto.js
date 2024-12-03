@@ -6,6 +6,12 @@ const productoController = require('../controllers/productoController');
 // Crear un nuevo producto
 router.post('/', productoController.createProducto);
 
+// Obtener todos los productos
+router.get('/all', productoController.getAllProducts);
+
+// Buscar productos por nombre
+router.get('/search', productoController.searchByName);
+
 // Obtener todos los productos de un agricultor
 router.get('/', productoController.getProductosByAgricultor);
 
