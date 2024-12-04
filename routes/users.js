@@ -3,35 +3,19 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { authMiddleware, checkRole } = require('../middleware/auth');
 
-// Rutas para usuarios
-router.post('/', 
-  //authMiddleware, 
-  //checkRole(['administrador']), 
-  userController.createUser
-);
+// Crear usuario
+router.post('/', userController.createUser);
 
-router.get('/', 
-  authMiddleware, 
-  checkRole(['SUPER_ADMIN']), 
-  userController.getUsers
-);
+// Listar usuarios con rol cliente y agricultor
+router.get('/', userController.getUsers);
 
-router.put('/:id', 
-  authMiddleware, 
-  checkRole(['SUPER_ADMIN']), 
-  userController.updateUser
-);
+// Obtener un usuario por username
+router.get('/:username', userController.getUserByUsername);
 
-router.delete('/:id', 
-  authMiddleware, 
-  checkRole(['SUPER_ADMIN']), 
-  userController.deactivateUser
-);
+// Actualizar un usuario por username
+router.put('/:username', userController.updateUser);
 
-router.delete('/:id', 
-  authMiddleware, 
-  checkRole(['SUPER_ADMIN']), 
-  userController.deleteUser
-);
+// Eliminar un usuario por username
+router.delete('/:username', userController.deleteUser);
 
 module.exports = router;

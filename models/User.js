@@ -1,122 +1,194 @@
 const pool = require('../config/database');
-const { encryptPassword } = require('../utils/encryption');
 
 class User {
   constructor(data) {
-    //console.log('Datos recibidos en el constructor:', data);
     this.id_usuario = data.id_usuario;
     this.username = data.username;
     this.password = data.password;
     this.rol = data.rol;
-    this.id_cliente = data.id_cliente;
-    this.id_agricultor = data.id_agricultor;
-    this.id_administrador = data.id_administrador;
   }
+
   static async create(userData) {
     const connection = await pool.getConnection();
     try {
-      
-      const [result] = await connection.query(
-        `INSERT INTO usuarios (
-          username, password, rol, id_cliente, id_agricultor, id_administrador
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          userData.username,
-          userData.password,
-          userData.rol,
-          userData.id_cliente  || null,
-          userData.id_agricultor || null,
-          userData.id_administrador  || null
+      await connection.beginTransaction();
 
-        ]
+      // Insertar usuario en la tabla usuarios
+      const [result] = await connection.query(
+        `INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)`,
+        [userData.username, userData.password, userData.rol]
       );
-      return result.insertId;
+      const userId = result.insertId;
+
+      // Insertar en la tabla correspondiente según el rol
+      switch (userData.rol) {
+        case 'cliente':
+          await connection.query(
+            `INSERT INTO tbl_cliente (nombre, telefono, direccion, id_usuario) VALUES (?, ?, ?, ?)`,
+            [userData.nombre, userData.telefono, userData.direccion, userId]
+          );
+          break;
+        case 'agricultor':
+          await connection.query(
+            `INSERT INTO tbl_agricultor (nombre, telefono, id_usuario) VALUES (?, ?, ?)`,
+            [userData.nombre, userData.telefono, userId]
+          );
+          break;
+        case 'administrador':
+          await connection.query(
+            `INSERT INTO tbl_administrador (nombre, email, telefono, id_usuario) VALUES (?, ?, ?, ?)`,
+            [userData.nombre, userData.email, userData.telefono, userId]
+          );
+          break;
+        default:
+          throw new Error('Rol inválido');
+      }
+
+      await connection.commit();
+      return userId;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
     } finally {
       connection.release();
     }
   }
-  
-
-  static async findByEmail(username) {
-    const [rows] = await pool.query('SELECT * FROM usuarios WHERE username = ?', [username]);
-    console.log('Resultado de la consulta:', rows[0]);
-    if (rows.length > 0) {
-      return new User(rows[0]);
-    }
-    return null;
+  static async listByRole() {
+    const [rows] = await pool.query(`
+      SELECT u.id_usuario, u.username, u.rol,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.nombre
+               WHEN u.rol = 'agricultor' THEN a.nombre
+             END AS nombre,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.telefono
+               WHEN u.rol = 'agricultor' THEN a.telefono
+             END AS telefono,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.direccion
+               ELSE NULL
+             END AS direccion
+      FROM usuarios u
+      LEFT JOIN tbl_cliente c ON u.id_usuario = c.id_usuario
+      LEFT JOIN tbl_agricultor a ON u.id_usuario = a.id_usuario
+      WHERE u.rol IN ('cliente', 'agricultor');
+    `);
+    return rows;
   }
-
-  static async findById(id_usuario) {
+  
+  static async findByUsername(username) {
     const [rows] = await pool.query(
-      'SELECT * FROM usuarios WHERE id = ?',
-      [id]
+      `SELECT * FROM usuarios WHERE username = ?`,
+      [username]
     );
     return rows[0];
   }
 
-  static async update(id, userData) {
+  static async findByUsernameWithDetails(username) {
+    const [rows] = await pool.query(`
+      SELECT u.id_usuario, u.username, u.rol,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.nombre
+               WHEN u.rol = 'agricultor' THEN a.nombre
+             END AS nombre,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.telefono
+               WHEN u.rol = 'agricultor' THEN a.telefono
+             END AS telefono,
+             CASE
+               WHEN u.rol = 'cliente' THEN c.direccion
+               ELSE NULL
+             END AS direccion
+      FROM usuarios u
+      LEFT JOIN tbl_cliente c ON u.id_usuario = c.id_usuario
+      LEFT JOIN tbl_agricultor a ON u.id_usuario = a.id_usuario
+      WHERE u.username = ?;
+    `, [username]);
+    return rows[0];
+  }
+  
+
+  static async updateByUsername(username, userData) {
     const connection = await pool.getConnection();
     try {
-      // Formatear la fecha de nacimiento
-      const fecha_nacimiento_formatted = new Date(userData.fecha_nacimiento).toISOString().slice(0, 10);
+      await connection.beginTransaction();
   
-      const [result] = await connection.query(
-        `UPDATE users SET 
-          nombres = ?,
-          apellidos = ?,
-          tipo_documento = ?,
-          numero_documento = ?,
-          genero = ?,
-          email = ?,
-          telefono = ?,
-          estado = ?,
-          fecha_nacimiento = ?
-        WHERE id = ?`,
-        [
-          userData.nombres,
-          userData.apellidos,
-          userData.tipo_documento,
-          userData.numero_documento,
-          userData.genero,
-          userData.email,
-          userData.telefono,
-          userData.estado,
-          fecha_nacimiento_formatted, // Usar la fecha formateada
-          id
-        ]
+      // Validar que el nuevo username no sea nulo ni undefined
+      if (!userData.username) {
+        throw new Error("El campo 'username' es obligatorio y no puede ser nulo");
+      }
+  
+      // Actualizar usuario en la tabla principal
+      await connection.query(
+        `UPDATE usuarios SET username = ? WHERE username = ?`,
+        [userData.username, username]
       );
-      return result.affectedRows > 0;
+  
+      // Actualizar en la tabla correspondiente según el rol
+      if (userData.rol === 'cliente') {
+        await connection.query(
+          `UPDATE tbl_cliente SET nombre = ?, telefono = ?, direccion = ? WHERE id_usuario = (
+            SELECT id_usuario FROM usuarios WHERE username = ?
+          )`,
+          [userData.nombre, userData.telefono, userData.direccion, userData.username]
+        );
+      } else if (userData.rol === 'agricultor') {
+        await connection.query(
+          `UPDATE tbl_agricultor SET nombre = ?, telefono = ? WHERE id_usuario = (
+            SELECT id_usuario FROM usuarios WHERE username = ?
+          )`,
+          [userData.nombre, userData.telefono, userData.username]
+        );
+      }
+  
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
     } finally {
       connection.release();
     }
   }
   
-
-  static async deactivate(id) {
-    const [result] = await pool.query(
-      'UPDATE users SET estado = false WHERE id = ?',
-      [id]
-    );
-    return result.affectedRows > 0;
-  }
-  static async delete(id) {
+  static async deleteByUsername(username) {
     const connection = await pool.getConnection();
     try {
-      const [result] = await connection.query(
-        'DELETE FROM users WHERE id = ?',
-        [id]
+      await connection.beginTransaction();
+  
+      // Buscar el usuario y su rol
+      const [user] = await pool.query(
+        `SELECT rol, id_usuario FROM usuarios WHERE username = ?`,
+        [username]
       );
-      return result.affectedRows > 0;
+      if (!user[0]) {
+        return false; // Usuario no encontrado
+      }
+  
+      const { rol, id_usuario } = user[0];
+  
+      // Eliminar de las tablas secundarias según el rol
+      if (rol === 'cliente') {
+        await connection.query(`DELETE FROM tbl_cliente WHERE id_usuario = ?`, [id_usuario]);
+      } else if (rol === 'agricultor') {
+        await connection.query(`DELETE FROM tbl_agricultor WHERE id_usuario = ?`, [id_usuario]);
+      } else if (rol === 'administrador') {
+        await connection.query(`DELETE FROM tbl_administrador WHERE id_usuario = ?`, [id_usuario]);
+      }
+  
+      // Eliminar de la tabla usuarios
+      await connection.query(`DELETE FROM usuarios WHERE username = ?`, [username]);
+  
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
     } finally {
       connection.release();
     }
   }
   
-
-  static async list() {
-    const [rows] = await pool.query('SELECT * FROM usuarios');
-    return rows;
-  }
+  
 }
-
 module.exports = User;

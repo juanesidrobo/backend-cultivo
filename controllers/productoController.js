@@ -46,7 +46,19 @@ const productoController = {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   },
-
+  async searchbyCodigo(req, res) {
+    try {
+      const { codigo } = req.query;
+      if (!codigo) {
+        return res.status(400).json({ message: 'El parámetro codigo es requerido' });
+      }
+      const productos = await Producto.searchByCodigo(codigo);
+      res.json(productos);
+    } catch (error) {
+      console.error('Error al buscar productos por codigo:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },
   async updateProducto(req, res) {
     try {
       const productoId = req.params.id;

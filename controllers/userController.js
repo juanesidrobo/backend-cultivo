@@ -4,22 +4,45 @@ const userController = {
   async createUser(req, res) {
     try {
       const userData = req.body;
-      
+
       // Validar datos requeridos
-      if (!userData.username || !userData.password ||  !userData.rol) {
+      if (!userData.username || !userData.password || !userData.rol) {
         return res.status(400).json({ message: 'Faltan campos requeridos' });
       }
 
-      // Verificar si el email ya existe
-      const existingUser = await User.findByEmail(userData.username);
+      // Verificar si el username ya existe
+      const existingUser = await User.findByUsername(userData.username);
       if (existingUser) {
-        return res.status(400).json({ message: 'El email ya está registrado' });
+        return res.status(400).json({ message: 'El username ya está registrado' });
       }
 
+      // Validar datos adicionales según el rol
+      switch (userData.rol) {
+        case 'cliente':
+          if (!userData.nombre || !userData.telefono || !userData.direccion) {
+            return res.status(400).json({ message: 'Faltan datos del cliente' });
+          }
+          break;
+        case 'agricultor':
+          if (!userData.nombre || !userData.telefono) {
+            return res.status(400).json({ message: 'Faltan datos del agricultor' });
+          }
+          break;
+        case 'administrador':
+          if (!userData.nombre || !userData.email || !userData.telefono) {
+            return res.status(400).json({ message: 'Faltan datos del administrador' });
+          }
+          break;
+        default:
+          return res.status(400).json({ message: 'Rol inválido' });
+      }
+
+      // Crear usuario y asignarlo a la tabla correspondiente
       const userId = await User.create(userData);
-      res.status(201).json({ 
+
+      res.status(201).json({
         message: 'Usuario creado exitosamente',
-        userId 
+        userId,
       });
     } catch (error) {
       console.error('Error al crear usuario:', error);
@@ -29,29 +52,41 @@ const userController = {
 
   // En el userController.js del backend
   async getUsers(req, res) {
-  try {
-    const { username } = req.query;
-    let users;
-    
-    if (username) {
-      users = await User.findByEmail(username);
-    } else {
-      users = await User.list();
+    try {
+      const users = await User.listByRole();
+      res.json(users);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
     }
-    
-    res.json(users);
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
-  }
-},
+  },
+  
+  async getUserByUsername(req, res) {
+    try {
+      const { username } = req.params;
+      const user = await User.findByUsernameWithDetails(username);
+  
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+    } catch (error) {
+      console.error('Error al buscar usuario:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  },  
 
   async updateUser(req, res) {
     try {
-      const { id } = req.params;
+      const { username } = req.params;
       const userData = req.body;
-      
-      const success = await User.update(id, userData);
+  
+      if (!userData.username) {
+        return res.status(400).json({ message: "El campo 'username' es obligatorio" });
+      }
+  
+      const success = await User.updateByUsername(username, userData);
       if (success) {
         res.json({ message: 'Usuario actualizado exitosamente' });
       } else {
@@ -61,26 +96,13 @@ const userController = {
       console.error('Error al actualizar usuario:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
     }
-  },
-
-  async deactivateUser(req, res) {
-    try {
-      const { id } = req.params;
-      const success = await User.deactivate(id);
-      if (success) {
-        res.json({ message: 'Usuario desactivado exitosamente' });
-      } else {
-        res.status(404).json({ message: 'Usuario no encontrado' });
-      }
-    } catch (error) {
-      console.error('Error al desactivar usuario:', error);
-      res.status(500).json({ message: 'Error interno del servidor' });
-    }
-  },
+  },  
+  
   async deleteUser(req, res) {
     try {
-      const { id } = req.params;
-      const success = await User.delete(id);
+      const { username } = req.params;
+  
+      const success = await User.deleteByUsername(username);
       if (success) {
         res.json({ message: 'Usuario eliminado exitosamente' });
       } else {
@@ -91,6 +113,7 @@ const userController = {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   }
+  
   
 };
 
