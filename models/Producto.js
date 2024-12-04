@@ -42,10 +42,15 @@ class Producto {
     `);
     return rows;
   }
+
   static async searchByCodigo(codigo) {
-    const [rows] = await pool.query(`SELECT * FROM tbl_producto WHERE codigo = ?`, [codigo]);
-    return rows;
+    const [rows] = await pool.query(
+      `SELECT nombre FROM tbl_producto WHERE codigo = ?`,
+      [codigo]
+    );
+    return rows[0]?.nombre || null; // Retorna el valor del campo 'nombre' o null si no hay resultados
   }
+  
   static async searchByName(name) {
     const [rows] = await pool.query(`
       SELECT p.codigo, p.nombre AS producto_nombre, p.precio, p.descripcion, p.cantidadDisponible, p.direccion,

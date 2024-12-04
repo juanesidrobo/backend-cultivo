@@ -12,6 +12,9 @@ router.get('/all', productoController.getAllProducts);
 // Buscar productos por nombre
 router.get('/search', productoController.searchByName);
 
+// Buscar productos por codigo
+router.get('/searchbyCodigo', productoController.searchbyCodigo);
+
 // Obtener todos los productos de un agricultor
 router.get('/', productoController.getProductosByAgricultor);
 

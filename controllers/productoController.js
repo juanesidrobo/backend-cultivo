@@ -49,13 +49,24 @@ const productoController = {
   async searchbyCodigo(req, res) {
     try {
       const { codigo } = req.query;
+  
+      // Validar que el parámetro `codigo` esté presente
       if (!codigo) {
         return res.status(400).json({ message: 'El parámetro codigo es requerido' });
       }
-      const productos = await Producto.searchByCodigo(codigo);
-      res.json(productos);
+  
+      // Llamar al modelo para buscar el nombre por código
+      const nombre = await Producto.searchByCodigo(codigo);
+  
+      // Si no se encuentra el producto, retornar un mensaje adecuado
+      if (!nombre) {
+        return res.status(404).json({ message: 'Producto no encontrado' });
+      }
+  
+      // Devolver el nombre del producto
+      res.json({ nombre });
     } catch (error) {
-      console.error('Error al buscar productos por codigo:', error);
+      console.error('Error al buscar producto por codigo:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   },
