@@ -14,6 +14,7 @@ const userRoutes = require('./routes/users');
 const shoppingListRoutes = require('./routes/shoppingLists');
 const sitioRoutes = require('./routes/sitio');
 const productoRoutes = require('./routes/producto');
+const resenaRoutes = require('./routes/resena');
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -21,6 +22,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/shopping-lists', shoppingListRoutes);
 app.use('/api/sitio', sitioRoutes);
 app.use('/api/producto', productoRoutes);
+app.use('/api/resenas', resenaRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

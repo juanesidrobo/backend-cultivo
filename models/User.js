@@ -188,6 +188,16 @@ class User {
       connection.release();
     }
   }
+  static async getCedulaByUserId(id_usuario) {
+    const [rows] = await pool.query(
+      `SELECT c.cedula 
+       FROM tbl_cliente c
+       INNER JOIN usuarios u ON c.id_usuario = u.id_usuario
+       WHERE u.id_usuario = ?`,
+      [id_usuario]
+    );
+    return rows[0]?.cedula || null; // Devuelve la cédula o null si no se encuentra
+  }
   
   
 }

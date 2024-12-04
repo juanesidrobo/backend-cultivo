@@ -18,4 +18,6 @@ router.put('/:username', userController.updateUser);
 // Eliminar un usuario por username
 router.delete('/:username', userController.deleteUser);
 
+router.get('/cedula/:id_usuario', userController.getCedulaByUserId);
+
 module.exports = router;

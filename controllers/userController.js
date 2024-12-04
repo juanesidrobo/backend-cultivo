@@ -112,6 +112,21 @@ const userController = {
       console.error('Error al eliminar usuario:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
     }
+  },
+  async getCedulaByUserId(req, res) {
+    try {
+      const { id_usuario } = req.params; // Recoge el id_usuario desde los parámetros de la URL
+      const cedula = await User.getCedulaByUserId(id_usuario);
+  
+      if (!cedula) {
+        return res.status(404).json({ message: 'Cédula no encontrada para este usuario.' });
+      }
+  
+      res.json({ cedula });
+    } catch (error) {
+      console.error('Error al obtener la cédula:', error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
   }
   
   
