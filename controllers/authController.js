@@ -28,9 +28,10 @@ const authController = {
       let additionalData = {};
       if (user.rol === 'cliente') {
         const [cliente] = await pool.query(
-          'SELECT nombre FROM tbl_cliente WHERE id_usuario = ?',
+          'SELECT cedula, nombre FROM tbl_cliente WHERE id_usuario = ?',
           [user.id_usuario]
         );
+        additionalData.cedula = cliente[0]?.cedula || null;
         additionalData.nombre = cliente[0]?.nombre || null;
       } else if (user.rol === 'agricultor') {
         const [agricultor] = await pool.query(
