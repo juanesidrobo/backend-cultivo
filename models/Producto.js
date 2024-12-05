@@ -35,10 +35,10 @@ class Producto {
   static async getAllProducts() {
     const [rows] = await pool.query(`
       SELECT p.codigo, p.nombre AS producto_nombre, p.precio, p.descripcion, p.cantidadDisponible, p.direccion,
-             a.nombre AS agricultor_nombre
-      FROM tbl_producto p
-      JOIN tbl_agricultor_producto ap ON p.codigo = ap.codigo
-      JOIN tbl_agricultor a ON ap.id_agricultor = a.id_agricultor
+             a.nombre AS agricultor_nombre, a.id_agricultor AS agricultor_id
+      FROM tbl_producto p 
+      JOIN tbl_agricultor_producto ap ON p.codigo = ap.codigo 
+      JOIN tbl_agricultor a ON ap.id_agricultor = a.id_agricultor 
     `);
     return rows;
   }
@@ -54,7 +54,7 @@ class Producto {
   static async searchByName(name) {
     const [rows] = await pool.query(`
       SELECT p.codigo, p.nombre AS producto_nombre, p.precio, p.descripcion, p.cantidadDisponible, p.direccion,
-             a.nombre AS agricultor_nombre
+             a.nombre AS agricultor_nombre, a.id_agricultor AS agricultor_id
       FROM tbl_producto p
       JOIN tbl_agricultor_producto ap ON p.codigo = ap.codigo
       JOIN tbl_agricultor a ON ap.id_agricultor = a.id_agricultor
